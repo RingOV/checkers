@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Шашки</title>
+        <meta charset='utf-8' />
+        <script type="text/javascript" src="script.js"></script>
+    </head>
+    <body>
+        <img id="board" src="board.svg" style="display: none;">
+        <img id="bc" src="bc.svg" style="display: none;">
+        <img id="wc" src="wc.svg" style="display: none;">
+        <canvas id="canvas" style="border: 1px dashed black;">Обновите браузер</canvas>
+        <script>
+            window.onload = init;
+            window.addEventListener('resize', draw);
+        </script>
+    </body>
+</html>

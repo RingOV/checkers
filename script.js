@@ -1,5 +1,3 @@
-
-
 //Функция создания объекта ячейки
 function Cell(color, who, koord, x, y, changed, can_move) {
     this.color = color;  // [b, w]
@@ -8,12 +6,11 @@ function Cell(color, who, koord, x, y, changed, can_move) {
     this.x = x;
     this.y = y;
     this.changed = changed;
-    this.can_move = can_move; 
+    this.can_move = can_move;
 }
 
 //Вывод массива (всех ячеек доски)
 function printArr(arr){
-    console.log('===========================')
     for (let i=0; i < arr.length; i++) {
         s = ''
         for (let j=0; j < arr[i].length; j++){
@@ -22,6 +19,7 @@ function printArr(arr){
         s += 8-i;
         console.log(s);
     }
+    console.log('===========================')
 }
 
 // Глобальные переменные
@@ -86,7 +84,7 @@ function getCursorPosition(canvas, event) {
     const x = Math.floor((event.clientX - rect.left - 60*factor)/110/factor);
     const y = Math.floor((event.clientY - rect.top - 60*factor)/110/factor);
     if (x < 0 || x > 7 || y < 0 || y > 7){return;}
-    console.log("x: " + x + " y: " + y);
+    console.log("selected "+"x: " + x + " y: " + y);
     //Если выделена шашка
     if (who_move[count_move%2].includes(board[y][x].who)){
         clearAllChanged();
@@ -106,6 +104,26 @@ function getCursorPosition(canvas, event) {
                 // console.log(board[y-1][x+1].koord);
             }
         }
+        //клетки, в которые можно побить
+        can_get = []
+        for (a = -1; a < 2; a += 2) {
+            for (b = -1; b < 2; b += 2) {
+                try {
+                    if (who_move[(count_move+1)%2].includes(board[y+a][x+b].who)) {
+                        if (board[y+a*2][x+b*2].who == "##"){
+                            can_get.push([y+a*2, x+b*2, y+a, x+b]);
+                        }
+                    }
+                } catch (e) {}
+            }
+        }
+        if (can_get.length != 0) {
+            for (i = 0; i < can_get.length; i++) {
+                board[can_get[i][0]][can_get[i][1]].can_move = true
+                console.log("can_get: "+board[can_get[i][0]][can_get[i][1]].koord)
+            }
+        }
+
         draw();
     }
     //Если выделено, куда можно походить

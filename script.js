@@ -248,10 +248,18 @@ function checkIfQueenCanEatMore(figure, l) {
     for (i=0; i<l.length; i++) {
         x = l[i].x;
         y = l[i].y;
+        x_eat = l[i].x_eat;
+        y_eat = l[i].y_eat;
+        s = board[x_eat][y_eat].was_geted;
+        board[x_eat][y_eat].was_geted = true;
         if (checkGetKoord(x, y, true, figure)) {
             result.push(l[i]);
         }
+        board[x_eat][y_eat].was_geted = s;
     }
+    console.log("==")
+    console.log(result)
+    console.log("==")
     if (result.length == 0) {
         return l;
     } else {
@@ -266,6 +274,7 @@ function setCanJump(x, y) {
     figure = board[x][y].who;
     if (figure[1] == "q") {
         l = checkIfQueenCanEatMore(figure, l);
+        console.log(l)
     }
     for (i=0; i<l.length; i++) {
         board[l[i].x][l[i].y].can_jump = true;

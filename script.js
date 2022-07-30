@@ -61,6 +61,7 @@ function init(){
     wcSVG = document.getElementById("wc");
     wqSVG = document.getElementById("wq");
     boardSVG = document.getElementById("board");
+    can_selectSVG = document.getElementById("can_select");
     images = {
         "bc": bcSVG,
         "bq": bqSVG,
@@ -148,6 +149,7 @@ function jump_to(x, y) {
         mustMove();
     } else {
         must_get = true;
+        board[x][y].can_select = true;
         board[x][y].selected = true;
         selected.x = x;
         selected.y = y;
@@ -458,11 +460,12 @@ function draw(){
                 ctx.drawImage(images[board[i][j].who], board[i][j].x, board[i][j].y, 110, 110);
                 //может быть выделена
                 if (board[i][j].can_select) {
-                    ctx.beginPath();
-                    ctx.lineWidth = "3";
-                    ctx.strokeStyle = "blue";
-                    ctx.rect(board[i][j].x, board[i][j].y, 110, 110);
-                    ctx.stroke();
+                    // ctx.beginPath();
+                    // ctx.lineWidth = "3";
+                    // ctx.strokeStyle = "blue";
+                    // ctx.rect(board[i][j].x, board[i][j].y, 110, 110);
+                    // ctx.stroke();
+                    ctx.drawImage(can_selectSVG, board[i][j].x, board[i][j].y, 110, 110);
                 }                
                 //выделенная шашка
                 if (board[i][j].selected) {
@@ -478,7 +481,7 @@ function draw(){
                 ctx.beginPath();
                 ctx.rect(board[i][j].x, board[i][j].y, 110, 110);
                 ctx.closePath();
-                ctx.fillStyle = "#0087ff";
+                ctx.fillStyle = "#4da6ff";
                 ctx.fill();
             }
         }

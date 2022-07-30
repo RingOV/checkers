@@ -57,11 +57,15 @@ function init(){
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext('2d');
     bcSVG = document.getElementById("bc");
+    bqSVG = document.getElementById("bq");
     wcSVG = document.getElementById("wc");
+    wqSVG = document.getElementById("wq");
     boardSVG = document.getElementById("board");
     images = {
         "bc": bcSVG,
+        "bq": bqSVG,
         "wc": wcSVG,
+        "wq": wqSVG,
     }
 
     //Заполнение массива доски "ячейками"
@@ -110,6 +114,14 @@ function getCursorPosition(canvas, event) {
     }
 }
 
+//Проверка становится ли шашка дамкой
+function ifNeedMakeQueen(x, y) {
+    if (board[x][y].who[1] != "q" && y == (count_move%2)*7) {
+        console.log(board[x][y].koord+" become a queen")
+        board[x][y].who = board[x][y].who[0]+"q";
+    }
+}
+
 //Функция выделения ячеек в которые можно ходить или прыгать
 function setCanMoveOrJump(x, y) {
     if (must_get) {
@@ -131,6 +143,7 @@ function jump_to(x, y) {
     if (!checkGetKoord(x, y, true)){
         clearWasGeted();
         must_get = false;
+        ifNeedMakeQueen(x, y);
         count_move++;
         mustMove();
     } else {
@@ -138,10 +151,10 @@ function jump_to(x, y) {
         board[x][y].selected = true;
         selected.x = x;
         selected.y = y;
+        ifNeedMakeQueen(x, y);
         setCanJump(x, y);
     }
     draw();
-    
 }
 
 //Функция перемещения шашки в заданные координаты
@@ -151,6 +164,7 @@ function move_to(x, y) {
     board[selected.x][selected.y].selected = false;
     clearCanMove();
     clearCanSelect();
+    ifNeedMakeQueen(x, y);
     count_move++;
     mustMove();
     draw();
@@ -193,17 +207,30 @@ function checkMove() {
         for (let j=0; j<8; j++){
             if (who_move[count_move%2].includes(board[i][j].who)) {
                 can_move = false;
+                //Проверка клеток для шашки и дамки (ход вперёд)
                 try {
                     if (board[i-1][j-(-1)**(count_move%2)].who == "##") {
                         can_move = true;
                     }
                 } catch (e) {}
-
                 try {
                     if (board[i+1][j-(-1)**(count_move%2)].who == "##") {
                         can_move = true;
                     }
                 } catch (e) {}
+                //Дополнительная роверка для дамки (ход назад)
+                if (board[i][j].who[1] == "q") {
+                    try {
+                        if (board[i-1][j+(-1)**(count_move%2)].who == "##") {
+                            can_move = true;
+                        }
+                    } catch (e) {}
+                    try {
+                        if (board[i+1][j+(-1)**(count_move%2)].who == "##") {
+                            can_move = true;
+                        }
+                    } catch (e) {}
+                }
 
                 if (can_move) {
                     list_can_move.push([i,j]);
@@ -214,31 +241,67 @@ function checkMove() {
     return list_can_move;
 }
 
-//Подсвечивает клетку, куда можно побить
+function checkIfQueenCanEatMore(figure, l) {
+    result = [];
+    for (i=0; i<l.length; i++) {
+        x = l[i].x;
+        y = l[i].y;
+        if (checkGetKoord(x, y, true, figure)) {
+            result.push(l[i]);
+        }
+    }
+    if (result.length == 0) {
+        return l;
+    } else {
+        return result;
+    }
+}
+
+//Подсвечивает клетки, куда можно побить
 function setCanJump(x, y) {
     clearCanMove();
     l = checkGetKoord(x, y);
-    console.log(l);
+    figure = board[x][y].who;
+    if (figure[1] == "q") {
+        l = checkIfQueenCanEatMore(figure, l);
+    }
     for (i=0; i<l.length; i++) {
-        board[l[i][0]][l[i][1]].can_jump = true;
-        board[l[i][0]][l[i][1]].eat_after_jump = [l[i][2], l[i][3]];
+        board[l[i].x][l[i].y].can_jump = true;
+        board[l[i].x][l[i].y].eat_after_jump = [l[i].x_eat, l[i].y_eat];
     }
 }
 
 //Подсвечивает клетки, куда можно походить
 function setCanMove(x, y) {
     clearCanMove();
-    try {
-        if (board[x-1][y-(-1)**(count_move%2)].who == "##") {
-            board[x-1][y-(-1)**(count_move%2)].can_move = true;
-        }
-    } catch (e) {}
+    // Для шашки
+    if (board[x][y].who[1] == "c") {
+        try {
+            if (board[x-1][y-(-1)**(count_move%2)].who == "##") {
+                board[x-1][y-(-1)**(count_move%2)].can_move = true;
+            }
+        } catch (e) {}
 
-    try {
-        if (board[x+1][y-(-1)**(count_move%2)].who == "##") {
-            board[x+1][y-(-1)**(count_move%2)].can_move = true;
+        try {
+            if (board[x+1][y-(-1)**(count_move%2)].who == "##") {
+                board[x+1][y-(-1)**(count_move%2)].can_move = true;
+            }
+        } catch (e) {}
+    } else { // Для дамки
+        for (a=-1; a<2; a+=2) {
+            for (b=-1; b<2; b+=2) {
+                for (n=1; n<8; n++) {
+                    try {
+                        if (board[x+a*n][y+b*n].who == "##") {
+                            board[x+a*n][y+b*n].can_move = true;
+                        } else {
+                            break;
+                        }
+                    } catch (e) {}
+                }
+            }
         }
-    } catch (e) {}
+    }
 }
 
 //Возвращает список шашек, которые могут бить
@@ -257,20 +320,60 @@ function checkGet() {
 }
 
 //Возвращает список координат куда можно побить и что побить
-function checkGetKoord(x, y, only_check = false) {
+function checkGetKoord(x, y, only_check = false, figure = false) {
     can_move_after_get = []
-    for (a = -1; a < 2; a += 2) {
-        for (b = -1; b < 2; b += 2) {
-            try {
-                if (who_move[(count_move+1)%2].includes(board[x+a][y+b].who) & !board[x+a][y+b].was_geted) {
-                    if (board[x+a*2][y+b*2].who == "##"){
-                        if (only_check) {
-                            return true;
+    if (!figure) {
+        figure = board[x][y].who;
+    }
+    //Проверка для шашки
+    if (figure[1] == "c") {
+        for (a = -1; a < 2; a += 2) {
+            for (b = -1; b < 2; b += 2) {
+                try {
+                    if (who_move[(count_move+1)%2].includes(board[x+a][y+b].who) & !board[x+a][y+b].was_geted) {
+                        if (board[x+a*2][y+b*2].who == "##"){
+                            if (only_check) {
+                                return true;
+                            }
+                            can_move_after_get.push({'x':x+a*2, 'y':y+b*2, 'x_eat':x+a, 'y_eat':y+b});
                         }
-                        can_move_after_get.push([x+a*2, y+b*2, x+a, y+b]);
+                    }
+                } catch (e) {}
+            }
+        }
+    } else { //Проверка для дамки
+        for (a = -1; a < 2; a += 2) {
+            for (b = -1; b < 2; b += 2) {
+                find = false;
+                eat = [];
+                for (n=1; n<8; n++) {
+                    try {
+                        if (find) {
+                            if (board[x+a*n][y+b*n].who == "##") {
+                                if (only_check) {
+                                    return true;
+                                }
+                                can_move_after_get.push({'x':x+a*n, 'y':y+b*n, 'x_eat':eat[0], 'y_eat':eat[1]})
+                            } else {
+                                // if (l.length != 0) {
+                                //     can_move_after_get.push([l, {'x':eat[0], 'y':eat[1]}]);
+                                // }
+                                break;
+                            }
+                        }
+
+                        if (who_move[(count_move+1)%2].includes(board[x+a*n][y+b*n].who) & !board[x+a*n][y+b*n].was_geted) {
+                            find = true;
+                            eat = [x+a*n, y+b*n];
+                        } 
+                    } catch (e) {
+                        // if (l.length != 0) {
+                        //     can_move_after_get.push([l, {'x':eat[0], 'y':eat[1]}]);
+                        // }
+                        break;
                     }
                 }
-            } catch (e) {}
+            }
         }
     }
     if (only_check) {

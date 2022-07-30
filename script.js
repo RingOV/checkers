@@ -11,9 +11,6 @@ function Cell(color, who, koord, x, y, can_select, selected, can_move, can_jump,
     this.can_jump = can_jump; // true, false пустая клетка, в которую можно прыгнуть после взятия
     this.eat_after_jump = eat_after_jump; // [x, y]
     this.was_geted = was_geted; // true, false была съедена
-
-    this.can_move_after_get = can_move_after_get; // true, false
-    this.get = get; // [x, y]
 }
 
 //Вывод массива (всех ячеек доски)
@@ -21,7 +18,7 @@ function printArr(arr){
     for (let i=0; i < arr.length; i++) {
         s = ''
         for (let j=0; j < arr[i].length; j++){
-            s += arr[i][j].who+' '
+            s += arr[j][i].who+' '
         }
         s += 8-i;
         console.log(s);
@@ -76,7 +73,7 @@ function init(){
             c = '##';
             if (i % 2 == j % 2){c = '  ';}
             // Заполнение доски объектами ячеек
-            arr.push(new Cell('b', c, charArr[j]+(8-i), 60+j*110, 60+i*110, false, false, false, false, [], false, false, []));
+            arr.push(new Cell('b', c, charArr[i]+(8-j), 60+i*110, 60+j*110, false, false, false, false, [], false, false, []));
         }
         board.push(arr);
     }
@@ -97,18 +94,18 @@ function getCursorPosition(canvas, event) {
     if (x < 0 || x > 7 || y < 0 || y > 7){return;}
     console.log("selected "+"x: " + x + " y: " + y);
 
-    if (board[y][x].can_select) {
-        board[selected.y][selected.x].selected = false;
-        board[y][x].selected = true;
+    if (board[x][y].can_select) {
+        board[selected.x][selected.y].selected = false;
+        board[x][y].selected = true;
         selected.x = x;
         selected.y = y;
         setCanMoveOrJump(x, y);
         draw();
     }
-    if (board[y][x].can_move) {
+    if (board[x][y].can_move) {
         move_to(x, y);
     }
-    if (board[y][x].can_jump) {
+    if (board[x][y].can_jump) {
         jump_to(x, y);
     }
 }
@@ -124,11 +121,11 @@ function setCanMoveOrJump(x, y) {
 
 //Функция взятия чужой шашки с прыжком в заданные координаты
 function jump_to(x, y) {
-    l = board[y][x].eat_after_jump;
+    l = board[x][y].eat_after_jump;
     board[l[0]][l[1]].was_geted = true;
-    board[y][x].who = board[selected.y][selected.x].who;
-    board[selected.y][selected.x].who = "##";
-    board[selected.y][selected.x].selected = false;
+    board[x][y].who = board[selected.x][selected.y].who;
+    board[selected.x][selected.y].who = "##";
+    board[selected.x][selected.y].selected = false;
     clearCanMove();
     clearCanSelect();
     if (!checkGetKoord(x, y, true)){
@@ -138,7 +135,7 @@ function jump_to(x, y) {
         mustMove();
     } else {
         must_get = true;
-        board[y][x].selected = true;
+        board[x][y].selected = true;
         selected.x = x;
         selected.y = y;
         setCanJump(x, y);
@@ -149,9 +146,9 @@ function jump_to(x, y) {
 
 //Функция перемещения шашки в заданные координаты
 function move_to(x, y) {
-    board[y][x].who = board[selected.y][selected.x].who;
-    board[selected.y][selected.x].who = "##";
-    board[selected.y][selected.x].selected = false;
+    board[x][y].who = board[selected.x][selected.y].who;
+    board[selected.x][selected.y].who = "##";
+    board[selected.x][selected.y].selected = false;
     clearCanMove();
     clearCanSelect();
     count_move++;
@@ -161,7 +158,7 @@ function move_to(x, y) {
 
 //Отмечает шашки, которые могут/должны ходить/бить
 function mustMove() {
-    l = []; // список отмеченных шашек (елси только одна, то автоматически выделяем)
+    l = []; // список отмеченных шашек (если только одна, то автоматически выделяем)
     list_can_get = checkGet();
     console.log("list_can_get "+list_can_get)
     if (list_can_get.length != 0) {
@@ -183,9 +180,9 @@ function mustMove() {
     }
     if (l.length == 1) {
         board[l[0][0]][l[0][1]].selected = true;
-        selected.x = l[0][1];
-        selected.y = l[0][0];
-        setCanMoveOrJump(l[0][1], l[0][0]);
+        selected.x = l[0][0];
+        selected.y = l[0][1];
+        setCanMoveOrJump(l[0][0], l[0][1]);
     }
 }
 
@@ -197,13 +194,13 @@ function checkMove() {
             if (who_move[count_move%2].includes(board[i][j].who)) {
                 can_move = false;
                 try {
-                    if (board[i-(-1)**(count_move%2)][j-1].who == "##") {
+                    if (board[i-1][j-(-1)**(count_move%2)].who == "##") {
                         can_move = true;
                     }
                 } catch (e) {}
 
                 try {
-                    if (board[i-(-1)**(count_move%2)][j+1].who == "##") {
+                    if (board[i+1][j-(-1)**(count_move%2)].who == "##") {
                         can_move = true;
                     }
                 } catch (e) {}
@@ -212,7 +209,6 @@ function checkMove() {
                     list_can_move.push([i,j]);
                 }
             }
-
         }
     }
     return list_can_move;
@@ -233,14 +229,14 @@ function setCanJump(x, y) {
 function setCanMove(x, y) {
     clearCanMove();
     try {
-        if (board[y-(-1)**(count_move%2)][x-1].who == "##") {
-            board[y-(-1)**(count_move%2)][x-1].can_move = true;
+        if (board[x-1][y-(-1)**(count_move%2)].who == "##") {
+            board[x-1][y-(-1)**(count_move%2)].can_move = true;
         }
     } catch (e) {}
 
     try {
-        if (board[y-(-1)**(count_move%2)][x+1].who == "##") {
-            board[y-(-1)**(count_move%2)][x+1].can_move = true;
+        if (board[x+1][y-(-1)**(count_move%2)].who == "##") {
+            board[x+1][y-(-1)**(count_move%2)].can_move = true;
         }
     } catch (e) {}
 }
@@ -251,7 +247,7 @@ function checkGet() {
     for (let i=0; i<8; i++){
         for (let j=0; j<8; j++){
             if (who_move[count_move%2].includes(board[i][j].who)) {
-                if (checkGetKoord(j, i, true)) {
+                if (checkGetKoord(i, j, true)) {
                     list_can_get.push([i, j]);
                 }
             }
@@ -266,12 +262,12 @@ function checkGetKoord(x, y, only_check = false) {
     for (a = -1; a < 2; a += 2) {
         for (b = -1; b < 2; b += 2) {
             try {
-                if (who_move[(count_move+1)%2].includes(board[y+a][x+b].who) & !board[y+a][x+b].was_geted) {
-                    if (board[y+a*2][x+b*2].who == "##"){
+                if (who_move[(count_move+1)%2].includes(board[x+a][y+b].who) & !board[x+a][y+b].was_geted) {
+                    if (board[x+a*2][y+b*2].who == "##"){
                         if (only_check) {
                             return true;
                         }
-                        can_move_after_get.push([y+a*2, x+b*2, y+a, x+b]);
+                        can_move_after_get.push([x+a*2, y+b*2, x+a, y+b]);
                     }
                 }
             } catch (e) {}
@@ -319,8 +315,8 @@ function fillBoardDefault() {
     for (let i=0; i<8; i++){
         for (let j=0; j<8; j++){
             if (board[i][j].who == '##'){
-                if (i < 3 ){board[i][j].who = 'bc';}
-                if (i > 4){board[i][j].who = 'wc';}
+                if (j < 3 ){board[i][j].who = 'bc';}
+                if (j > 4){board[i][j].who = 'wc';}
             }
         }
     }

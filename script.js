@@ -97,7 +97,6 @@ function getCursorPosition(canvas, event) {
     const x = Math.floor((event.clientX - rect.left - 60*factor)/110/factor);
     const y = Math.floor((event.clientY - rect.top - 60*factor)/110/factor);
     if (x < 0 || x > 7 || y < 0 || y > 7){return;}
-    console.log("selected "+"x: " + x + " y: " + y);
 
     if (board[x][y].can_select) {
         board[selected.x][selected.y].selected = false;
@@ -176,7 +175,6 @@ function move_to(x, y) {
 function mustMove() {
     l = []; // список отмеченных шашек (если только одна, то автоматически выделяем)
     list_can_get = checkGet();
-    console.log("list_can_get "+list_can_get)
     if (list_can_get.length != 0) {
         must_get = true;
         for (i=0; i<list_can_get.length; i++) {
@@ -185,7 +183,6 @@ function mustMove() {
         }
     } else {
         list_can_move = checkMove();
-        console.log("list_can_move "+list_can_move)
         if (list_can_move.length != 0) {
             must_get = false;
             for (i=0; i<list_can_move.length; i++) {
@@ -257,9 +254,6 @@ function checkIfQueenCanEatMore(figure, l) {
         }
         board[x_eat][y_eat].was_geted = s;
     }
-    console.log("==")
-    console.log(result)
-    console.log("==")
     if (result.length == 0) {
         return l;
     } else {
@@ -274,7 +268,6 @@ function setCanJump(x, y) {
     figure = board[x][y].who;
     if (figure[1] == "q") {
         l = checkIfQueenCanEatMore(figure, l);
-        console.log(l)
     }
     for (i=0; i<l.length; i++) {
         board[l[i].x][l[i].y].can_jump = true;
@@ -366,9 +359,6 @@ function checkGetKoord(x, y, only_check = false, figure = false) {
                                 }
                                 can_move_after_get.push({'x':x+a*n, 'y':y+b*n, 'x_eat':eat[0], 'y_eat':eat[1]})
                             } else {
-                                // if (l.length != 0) {
-                                //     can_move_after_get.push([l, {'x':eat[0], 'y':eat[1]}]);
-                                // }
                                 break;
                             }
                         }
@@ -378,9 +368,6 @@ function checkGetKoord(x, y, only_check = false, figure = false) {
                             eat = [x+a*n, y+b*n];
                         } 
                     } catch (e) {
-                        // if (l.length != 0) {
-                        //     can_move_after_get.push([l, {'x':eat[0], 'y':eat[1]}]);
-                        // }
                         break;
                     }
                 }
@@ -469,11 +456,6 @@ function draw(){
                 ctx.drawImage(images[board[i][j].who], board[i][j].x, board[i][j].y, 110, 110);
                 //может быть выделена
                 if (board[i][j].can_select) {
-                    // ctx.beginPath();
-                    // ctx.lineWidth = "3";
-                    // ctx.strokeStyle = "blue";
-                    // ctx.rect(board[i][j].x, board[i][j].y, 110, 110);
-                    // ctx.stroke();
                     ctx.drawImage(can_selectSVG, board[i][j].x, board[i][j].y, 110, 110);
                 }                
                 //выделенная шашка

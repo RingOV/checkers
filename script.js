@@ -140,10 +140,10 @@ function jump_to(x, y) {
     board[selected.x][selected.y].selected = false;
     clearCanMove();
     clearCanSelect();
+    ifNeedMakeQueen(x, y);
     if (!checkGetKoord(x, y, true)){
         clearWasGeted();
         must_get = false;
-        ifNeedMakeQueen(x, y);
         count_move++;
         mustMove();
     } else {
@@ -152,7 +152,8 @@ function jump_to(x, y) {
         board[x][y].selected = true;
         selected.x = x;
         selected.y = y;
-        ifNeedMakeQueen(x, y);
+        console.log(board[x][y].who)
+        console.log(board[x][y].who)
         setCanJump(x, y);
     }
     draw();

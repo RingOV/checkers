@@ -152,8 +152,6 @@ function jump_to(x, y) {
         board[x][y].selected = true;
         selected.x = x;
         selected.y = y;
-        console.log(board[x][y].who)
-        console.log(board[x][y].who)
         setCanJump(x, y);
     }
     draw();

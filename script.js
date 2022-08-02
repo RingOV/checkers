@@ -446,11 +446,9 @@ function draw(){
         for (let j = 0; j < 8; j++) {
             //шашки
             if (['wc', 'wq', 'bc', 'bq'].includes(board[i][j].who)) {
+                ctx.globalAlpha = 1;
                 if (board[i][j].was_geted) {
                     ctx.globalAlpha = 0.5;
-                }
-                else {
-                    ctx.globalAlpha = 1;
                 }
                 ctx.drawImage(images[board[i][j].who], board[i][j].x, board[i][j].y, 110, 110);
                 //может быть выделена
